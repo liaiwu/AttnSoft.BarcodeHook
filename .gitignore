@@ -2,6 +2,11 @@
 # 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
 ################################################################################
 
-/.vs/BarcodeHook/FileContentIndex
+/Test/bin/Debug
+/Test/obj
+/.vs
 /BarcodeHook/obj
 /BarcodeHook/bin
+/BarcodeHook/BarcodeHook.csproj.user
+/Test/Test.csproj.user
+/BarcodeHook/BarcodeHook.csproj.user

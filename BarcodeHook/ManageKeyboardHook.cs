@@ -1,4 +1,9 @@
-﻿namespace BarcodeApp
+﻿using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
+
+namespace AttnSoft.BarcodeHook
 {
     /// <summary>
     /// Delegate defining the method used to subsribe to the operating system keyboard events
@@ -7,7 +12,48 @@
     /// necessary information about the key event</param>
     /// <returns>The subscriber should return true if the key was processed and should not be
     /// forwarded to the rest of the application</returns>
-    public delegate bool ManageKeyboardHookEvent(Message messageRaised);
+    internal delegate bool ManageKeyboardHookEvent(KeyboardMsg messageRaised);
+    //internal delegate bool ManageKeyboardHookEvent(Message messageRaised);
+
+    public class KeyboardMsg
+    {
+        public int Msg { get; set; }//系统消息
+        public int VkCode { get; set; }
+        public int ScanCode { get; set; }
+    }
+
+    /// <summary>
+    /// Structure used with keyboard hooks to manage low-level keyboard events
+    /// </summary>
+    internal struct EventMsg
+    {
+#pragma warning disable 0649 // The following fields are not explicitely assigned but decoded through interop so the warnings need to be suppressed
+        /// <summary>
+        /// A virtual-key code. The code must be a value in the range 1 to 254
+        /// </summary>
+        public Int32 vkCode;
+
+        /// <summary>
+        /// A hardware scan code for the key
+        /// </summary>
+        public Int32 scanCode;
+
+        /// <summary>
+        /// The extended-key flag, event-injected flags, context code, and transition-state flag
+        /// </summary>
+        public Int32 flags;
+
+        /// <summary>
+        /// The time stamp for this message, equivalent to what GetMessageTime would return for this message
+        /// </summary>
+        public Int32 time;
+
+        /// <summary>
+        /// Additional information associated with the message.
+        /// </summary>
+        public IntPtr dwExtraInfo;
+#pragma warning disable 0649
+    }
 
     /// <summary>
     /// This static class is used to hook the keyboard events, operating-system wise. That is, if the hook is active, all the
@@ -16,7 +62,7 @@
     /// delegate to be passed so that the event is raised to all the subscribers, until one processes the key received (returning
     /// true to the event); when this happens the subsequent subscribers will not receive the event notification
     /// </summary>
-    public static class KeyboardHookHandler
+    internal class KeyboardHookHandler : IDisposable
     {
         /// <summary>
         /// An application-defined or library-defined callback function used with the SetWindowsHookEx function.
@@ -36,42 +82,10 @@
         /// otherwise, other applications that have installed WH_KEYBOARD_LL hooks will not receive hook notifications and may behave incorrectly as a result.
         /// If the hook procedure processed the message, it may return a nonzero value to prevent the system from passing the message to the rest of the hook chain
         /// or the target window procedure.</returns>
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+        private delegate IntPtr HookKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         private const int WH_KEYBOARD_LL = 13;
 
-        /// <summary>
-        /// Structure used with keyboard hooks to manage low-level keyboard events
-        /// </summary>
-        private struct KBDLLHOOKSTRUCT
-        {
-#pragma warning disable 0649 // The following fields are not explicitely assigned but decoded through interop so the warnings need to be suppressed
-            /// <summary>
-            /// A virtual-key code. The code must be a value in the range 1 to 254
-            /// </summary>
-            public Int32 vkCode;
-
-            /// <summary>
-            /// A hardware scan code for the key
-            /// </summary>
-            public Int32 scanCode;
-
-            /// <summary>
-            /// The extended-key flag, event-injected flags, context code, and transition-state flag
-            /// </summary>
-            public Int32 flags;
-
-            /// <summary>
-            /// The time stamp for this message, equivalent to what GetMessageTime would return for this message
-            /// </summary>
-            public Int32 time;
-
-            /// <summary>
-            /// Additional information associated with the message.
-            /// </summary>
-            public IntPtr dwExtraInfo;
-#pragma warning disable 0649
-        }
 
         /// <summary>
         /// Installs an application-defined hook procedure into a hook chain.
@@ -91,7 +105,7 @@
         /// <returns>If the function succeeds, the return value is the handle to the hook procedure.
         /// If the function fails, the return value is NULL. To get extended error information, call GetLastError.</returns>
         [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+        private static extern IntPtr SetWindowsHookEx(int idHook, HookKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
 
         /// <summary>
         /// Removes a hook procedure installed in a hook chain by the SetWindowsHookEx function.
@@ -135,21 +149,33 @@
         /// The delegate used for the hook. Stored in a variable in order to avoid garbage collection
         /// </summary>
         /// DP2DO: don't know if this is still needed, since I made KeyboardHookCallback static
-        static private LowLevelKeyboardProc hookCallback = KeyboardHookCallback;
+        private HookKeyboardProc hookCallback;
 
+        internal event ManageKeyboardHookEvent KeyboardHookEvent;
         /// <summary>
         /// The hook id.
         /// </summary>
         static private IntPtr keyboardHookID = IntPtr.Zero;
 
+        int refCount = 0;
+
+        internal static KeyboardHookHandler Instance=new KeyboardHookHandler();
+
+        private KeyboardHookHandler()
+        {
+            hookCallback = KeyboardHookCallback;
+        }
+
         /// <summary>
         /// Unhooks keyboard to restore standard system function keys management
         /// </summary>
-        static public void UnHookKeyboard()
+        public void UnHookKeyboard()
         {
             lock (hookCallback)
             {
-                if (keyboardHookID != IntPtr.Zero)
+                Interlocked.Decrement(ref refCount);
+
+                if (refCount <= 0 && keyboardHookID != IntPtr.Zero)
                 {
                     UnhookWindowsHookEx(keyboardHookID);
                     keyboardHookID = IntPtr.Zero;
@@ -160,26 +186,34 @@
         /// <summary>
         /// Initialize the hook that intercept dangerous Windows keys
         /// </summary>
-        static public void HookKeyboard()
+        public bool HookKeyboard()
         {
             lock (hookCallback)
             {
-                IntPtr moduleHandle = GetModuleHandle(null);
-                if (moduleHandle == IntPtr.Zero)
+                if (keyboardHookID == IntPtr.Zero)
                 {
-                    Console.WriteLine("It was not possible to retrieve a moduleHandle: {0}", Win32.FormatMessage());
-                }
-                else
-                {
-                    keyboardHookID = SetWindowsHookEx(WH_KEYBOARD_LL, hookCallback, moduleHandle, 0);
-                    if (keyboardHookID == IntPtr.Zero)
+                    var lpModuleName = Process.GetCurrentProcess().MainModule?.ModuleName;
+                    IntPtr moduleHandle = GetModuleHandle(lpModuleName);
+                    if (moduleHandle == IntPtr.Zero)
                     {
-                        Console.WriteLine("It was not possible to install the keyboard hook: {0}", Win32.FormatMessage());
+                        Console.WriteLine("It was not possible to retrieve a moduleHandle: {0}", Win32.FormatMessage());
+                        return false;
+                    }
+                    else
+                    {
+                        keyboardHookID = SetWindowsHookEx(WH_KEYBOARD_LL, hookCallback, moduleHandle, 0);
+                        if (keyboardHookID == IntPtr.Zero)
+                        {
+                            Console.WriteLine("It was not possible to install the keyboard hook: {0}", Win32.FormatMessage());
+                            return false;
+                        }
                     }
                 }
+                Interlocked.Increment(ref refCount);
+                return true;
             }
         }
-
+        static IntPtr handledOk = (IntPtr)1;
         /// <summary>
         /// Intecept the keypresses
         /// </summary>
@@ -187,53 +221,39 @@
         /// <param name="wParam">The key event</param>
         /// <param name="lParam">The pointer to the structure that contains the virtual key value.</param>
         /// <returns></returns>
-        private static IntPtr KeyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        private IntPtr KeyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            // Return this value in case the event is handled
-            IntPtr handledRc = (IntPtr)1;
-
             if (nCode >= 0)
             {
-                KBDLLHOOKSTRUCT kbd = (KBDLLHOOKSTRUCT)System.Runtime.InteropServices.Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
-                Message msg = new Message();
-                msg.Msg = (int)wParam;
-                Int64 newLParam = (Int64)kbd.scanCode;
-                newLParam <<= 16;
-                msg.LParam = new IntPtr(newLParam);
-                msg.WParam = new IntPtr((Int64)kbd.vkCode);
-
-                if (registeredDelegates != null && registeredDelegates.Count > 0)
+                EventMsg? keyMsg = (EventMsg?)Marshal.PtrToStructure(lParam, typeof(EventMsg));
+                if (keyMsg != null)
                 {
-                    foreach (ManageKeyboardHookEvent del in registeredDelegates)
+                    KeyboardMsg msg = new KeyboardMsg()
                     {
-                        if (del(msg))
+                        Msg = (int)wParam,
+                        ScanCode = keyMsg.Value.scanCode,
+                        VkCode = keyMsg.Value.vkCode
+                    };
+                    if (null != KeyboardHookEvent)
+                    {
+                        if (KeyboardHookEvent(msg))
                         {
-                            return handledRc;
+                            return handledOk;
                         }
                     }
                 }
             }
-
             return CallNextHookEx(keyboardHookID, nCode, wParam, lParam);
         }
 
-        private static List<ManageKeyboardHookEvent> registeredDelegates = new List<ManageKeyboardHookEvent>();
-
-        /// <summary>
-        /// Subscribe to receive notification when a key event is raised from the operating system. A delegate
-        /// is required as parameter and the delegate will be called for all the subscribers until one returns
-        /// true, meaning that it was processed and should not be passed to the rest of the application.
-        /// </summary>
-        /// <param name="eventDelegate">Delegate to the method which will be called when the key event raises</param>
-        public static void RegisterHandler(ManageKeyboardHookEvent eventDelegate)
+        public void Dispose()
         {
-            // When the first registration is raised, the keyboard is hooked application wise
-            if (registeredDelegates.Count == 0)
+            if (keyboardHookID != IntPtr.Zero)
             {
-                HookKeyboard();
+                keyboardHookID = IntPtr.Zero;
+                UnhookWindowsHookEx(keyboardHookID);
+                refCount = 0;
             }
-
-            registeredDelegates.Add(eventDelegate);
         }
 
     }

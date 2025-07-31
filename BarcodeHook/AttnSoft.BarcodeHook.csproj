@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<Version>1.0.0</Version>
+		<Authors>LAW</Authors>
+		<Copyright>Copyright © 2025 LAW. All rights reserved.</Copyright>
+		<SignAssembly>False</SignAssembly>
+		<Title>AttnSoft.BarcodeHook</Title>
+		<Description>Windows Keyboard Hook Realizes Industrial Scanning Gun Focal-less Input.Windows 键盘钩子实现工业扫码枪无焦点输入</Description>
+		<PackageReleaseNotes>Windows Keyboard Hook Realizes Industrial Scanning Gun Focal-less Input.Windows 键盘钩子实现工业扫码枪无焦点输入</PackageReleaseNotes>
+		<RepositoryType>public</RepositoryType>
+		<PackageTags>AttnSoft.BarcodeHook,BarcodeReader,Keyboard,KeyboardHook,BarcodeHook</PackageTags>
+		<ApplicationIcon>BarcodeReader.ico</ApplicationIcon>
+		<PackageIcon>BarcodeReader.png</PackageIcon>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="ScanerHook.cs" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="BarcodeReader.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="BarcodeReader.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+	
+</Project>

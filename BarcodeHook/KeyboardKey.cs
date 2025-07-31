@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BarcodeApp
+namespace AttnSoft.BarcodeHook
 {
     /// <summary>
     /// Parse a WM_KEYDOWN message extracting the scancode and char information from it.
@@ -24,16 +19,18 @@ namespace BarcodeApp
 
         /// <summary>
         /// The keyboard character as converted by ScancodeToChar(scancode, false), so keyboard layout indipendent.
+        /// 按键码转换成字符
         /// </summary>
-        public char ConvertedChar
+        public char KeyChar
         {
-            get { return convertedChar; }
+            get { return keyChar; }
         }
 
-        private readonly char convertedChar;
+        private readonly char keyChar;
 
         /// <summary>
         /// The key scancode.
+        /// 按键码
         /// </summary>
         public int Scancode
         {
@@ -64,26 +61,27 @@ namespace BarcodeApp
         /// Class constructor.
         /// </summary>
         /// <param name="m">The WM_KEYDOWN message containing the key information.</param>
-        public KeyboardKey(ref System.Windows.Forms.Message m)
+        public KeyboardKey(ref KeyboardMsg m)
           : this(ref m, false)
         { }
 
         /// <summary>
         /// Class constructor.
         /// </summary>
-        /// <param name="m">The WM_KEYDOWN message containing the key information.</param>
+        /// <param name="msg">The WM_KEYDOWN message containing the key information.</param>
         /// <param name="shift">When true, the shift key must be considered pressed</param>
-        public KeyboardKey(ref System.Windows.Forms.Message m, bool shift)
+        public KeyboardKey(ref KeyboardMsg msg, bool shift)
         {
             // Hiword of LParam
-            scancode = Convert.ToInt32((m.LParam.ToInt64() >> 16) & 0x1FF);
+            scancode=msg.ScanCode & 0xFF;
             // Lower 16 bits of m.WParam
-            messageChar = Convert.ToChar(m.WParam.ToInt64() & 0xFFFF);
-            convertedChar = ScancodeToChar(scancode, shift);
-            string charForTrace = convertedChar < ' ' ? string.Format("0x{0:X2}", (int)convertedChar) : convertedChar.ToString();
-            Console.WriteLine("Key: Msg={0}, Scancode={1,3:X}h, MsgChar={2}, CvtChar={3} ({4})",
-              m.Msg == Win32.WM_KEYDOWN ? "down" : "up  ",
-              Scancode, MessageChar, charForTrace, Convert.ToInt32(ConvertedChar));
+            messageChar = Convert.ToChar(msg.VkCode & 0xFF);
+            keyChar = ScancodeToChar(scancode, shift);
+#if DEBUG
+            string charForTrace = keyChar < ' ' ? string.Format("0x{0:X2}", (int)keyChar) : keyChar.ToString();
+            string keyPress = msg.Msg == Win32.WM_KEYDOWN ? "down" : "up  ";
+            Console.WriteLine($"Key: Msg={keyPress}, Scancode={Scancode}, MsgChar={MessageChar}, CvtChar={charForTrace} ({Convert.ToInt32(KeyChar)})");
+#endif
         }
 
         /// <summary>
