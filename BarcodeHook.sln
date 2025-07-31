@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BarcodeHook", "BarcodeHook\BarcodeHook.csproj", "{9E4D1680-6D63-4E82-8CA8-73FEA42AC805}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9E4D1680-6D63-4E82-8CA8-73FEA42AC805}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E4D1680-6D63-4E82-8CA8-73FEA42AC805}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E4D1680-6D63-4E82-8CA8-73FEA42AC805}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E4D1680-6D63-4E82-8CA8-73FEA42AC805}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {626D2C3B-1857-48AB-9724-FCB8979B7DF1}
+	EndGlobalSection
+EndGlobal
