@@ -29,7 +29,22 @@ private void ScanerHook_BarCodeEvent(string barcode)
 ```csharp
 scanerHook.Stop();
 ```
-## 支持框架
+### 自定义条码格式
+
+```csharp
+var readSetting = new BarCodeReadSetting()
+{
+    BarcodeHeader = "^",//条码前缀
+    Trailer = "\r",//条码结尾
+    BarcodeLength = 20//条码长度
+};
+BarcodeReaders scanerHook = new BarcodeReaders(readSetting);
+```
+不指定条码格式时,系统内部默认为以回车符结尾的条码格式:
+```csharp
+BarcodeReaders scanerHook = new BarcodeReaders(new BarCodeReadSetting { Trailer="\r"});
+```
+### 支持框架
 
 | .NET框架名称               | 是否支持 |
 | -------------------------- | -------- |

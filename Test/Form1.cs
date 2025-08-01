@@ -12,6 +12,15 @@ namespace Test
         public Form1()
         {
             InitializeComponent();
+            //自定义条码格式:
+            //var readSetting = new BarCodeReadSetting()
+            //{
+            //    BarcodeHeader = "^",//条码前缀
+            //    Trailer = "\r",//条码结尾
+            //    BarcodeLength = 20//条码长度
+            //};
+            //BarcodeReaders scanerHook = new BarcodeReaders(readSetting);
+
             scanerHook.ScanerEvent += ScanerHook_BarCodeEvent;
             scanerHook.Start();
         }
