@@ -151,7 +151,7 @@ namespace AttnSoft.BarcodeHook
         /// DP2DO: don't know if this is still needed, since I made KeyboardHookCallback static
         private HookKeyboardProc hookCallback;
 
-        internal event ManageKeyboardHookEvent KeyboardHookEvent;
+        internal event ManageKeyboardHookEvent? KeyboardHookEvent;
         /// <summary>
         /// The hook id.
         /// </summary>
