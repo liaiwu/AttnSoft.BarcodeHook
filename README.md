@@ -51,3 +51,6 @@ BarcodeReaders scanerHook = new BarcodeReaders(new BarCodeReadSetting { Trailer=
 | .NET Framework 4.0        | 支持     |
 | .NET Core 2.0 、3.1        | 支持     |
 | .NET 5  to last version   | 支持     |
+
+### Github
+https://github.com/liaiwu/AttnSoft.BarcodeHook.git
