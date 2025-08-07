@@ -110,4 +110,5 @@ BarcodeReaders scanerHook = new BarcodeReaders(new BarCodeReadSetting { Trailer=
 
 ### 开源链接
 Github: https://github.com/liaiwu/AttnSoft.BarcodeHook.git
+
 Gitee:  https://gitee.com/attnsoft/AttnSoft.BarcodeHook.git
