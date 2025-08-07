@@ -1,4 +1,5 @@
 using AttnSoft.BarcodeHook;
+using AttnSoft.BarcodeHook.RawInput;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -6,8 +7,6 @@ namespace Test
 {
     public partial class Form1 : Form
     {
-
-
         BarcodeReaders scanerHook = new BarcodeReaders();
         public Form1()
         {
@@ -23,6 +22,7 @@ namespace Test
 
             scanerHook.ScanerEvent += ScanerHook_BarCodeEvent;
             scanerHook.Start();
+            //var rawDevice = new RawDeviceInput();
         }
 
         private void ScanerHook_BarCodeEvent(string barcode)

@@ -35,7 +35,6 @@
             // 
             listBox1.Dock = DockStyle.Fill;
             listBox1.FormattingEnabled = true;
-            listBox1.ItemHeight = 31;
             listBox1.Location = new Point(0, 0);
             listBox1.Name = "listBox1";
             listBox1.Size = new Size(997, 490);
@@ -49,7 +48,7 @@
             Controls.Add(listBox1);
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Form1";
+            Text = "通过键盘钩子无焦点读取条码";
             FormClosed += Form1_FormClosed;
             ResumeLayout(false);
         }
