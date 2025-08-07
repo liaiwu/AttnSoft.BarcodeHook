@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net40;netstandard2.0;net6.0;net9.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
-		<Version>1.0.0</Version>
+		<Version>2.0.0</Version>
 		<Authors>LAW</Authors>
 		<LangVersion>latest</LangVersion>
 		<Copyright>Copyright © 2025 LAW. All rights reserved.</Copyright>
@@ -16,8 +16,23 @@
 		<PackageTags>AttnSoft.BarcodeHook,BarcodeReader,Keyboard,KeyboardHook,BarcodeHook</PackageTags>
 		<ApplicationIcon>BarcodeReader.ico</ApplicationIcon>
 		<PackageIcon>BarcodeReader.png</PackageIcon>
+
 	</PropertyGroup>
 	<ItemGroup>
+	  <Compile Remove="Logging\**" />
+	  <EmbeddedResource Remove="Logging\**" />
+	  <None Remove="Logging\**" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="KeyboardDevice.cs" />
+	  <Compile Remove="RawInput\Device\Axis.cs" />
+	  <Compile Remove="RawInput\Device\GamepadButton.cs" />
+	  <Compile Remove="RawInput\Device\ProductIdentifier.cs" />
+	  <Compile Remove="RawInput\Device\RawGamepadDevice.cs" />
+	  <Compile Remove="RawInput\Device\RawHidDevice.cs" />
+	  <Compile Remove="RawInput\Device\RawMouseDevice.cs" />
+	  <Compile Remove="RawInput\Device\VendorIdentifier.cs" />
+	  <Compile Remove="RawInput\IRawDeviceInput.cs" />
 	  <Compile Remove="ScanerHook.cs" />
 	</ItemGroup>
 	<ItemGroup>
@@ -29,6 +44,12 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+	  <PackageReference Include="Microsoft.Win32.Registry">
+	    <Version>4.7.0</Version>
+	  </PackageReference>
 	</ItemGroup>
 	
 </Project>

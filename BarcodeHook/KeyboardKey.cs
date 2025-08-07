@@ -79,7 +79,7 @@ namespace AttnSoft.BarcodeHook
             keyChar = ScancodeToChar(scancode, shift);
 #if DEBUG
             string charForTrace = keyChar < ' ' ? string.Format("0x{0:X2}", (int)keyChar) : keyChar.ToString();
-            string keyPress = msg.Msg == Win32.WM_KEYDOWN ? "down" : "up  ";
+            string keyPress = msg.Msg == WinApi.WM_KEYDOWN ? "down" : "up  ";
             Console.WriteLine($"Key: Msg={keyPress}, Scancode={Scancode}, MsgChar={MessageChar}, CvtChar={charForTrace} ({Convert.ToInt32(KeyChar)})");
 #endif
         }

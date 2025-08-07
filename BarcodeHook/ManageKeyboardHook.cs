@@ -15,13 +15,6 @@ namespace AttnSoft.BarcodeHook
     internal delegate bool ManageKeyboardHookEvent(KeyboardMsg messageRaised);
     //internal delegate bool ManageKeyboardHookEvent(Message messageRaised);
 
-    public class KeyboardMsg
-    {
-        public int Msg { get; set; }//系统消息
-        public int VkCode { get; set; }
-        public int ScanCode { get; set; }
-    }
-
     /// <summary>
     /// Structure used with keyboard hooks to manage low-level keyboard events
     /// </summary>
@@ -196,7 +189,7 @@ namespace AttnSoft.BarcodeHook
                     IntPtr moduleHandle = GetModuleHandle(lpModuleName);
                     if (moduleHandle == IntPtr.Zero)
                     {
-                        Console.WriteLine("It was not possible to retrieve a moduleHandle: {0}", Win32.FormatMessage());
+                        Console.WriteLine("It was not possible to retrieve a moduleHandle: {0}", WinApi.FormatMessage());
                         return false;
                     }
                     else
@@ -204,7 +197,7 @@ namespace AttnSoft.BarcodeHook
                         keyboardHookID = SetWindowsHookEx(WH_KEYBOARD_LL, hookCallback, moduleHandle, 0);
                         if (keyboardHookID == IntPtr.Zero)
                         {
-                            Console.WriteLine("It was not possible to install the keyboard hook: {0}", Win32.FormatMessage());
+                            Console.WriteLine("It was not possible to install the keyboard hook: {0}", WinApi.FormatMessage());
                             return false;
                         }
                     }
@@ -230,7 +223,7 @@ namespace AttnSoft.BarcodeHook
                 {
                     KeyboardMsg msg = new KeyboardMsg()
                     {
-                        Msg = (int)wParam,
+                        Msg = (uint)wParam,
                         ScanCode = keyMsg.Value.scanCode,
                         VkCode = keyMsg.Value.vkCode
                     };
