@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36310.24
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarcodeHook", "BarcodeHook\AttnSoft.BarcodeHook.csproj", "{2D27C174-B110-4159-8A90-2CE1F7F0CC2C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttnSoft.BarcodeHook", "BarcodeHook\AttnSoft.BarcodeHook.csproj", "{2D27C174-B110-4159-8A90-2CE1F7F0CC2C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{481310A5-C8B6-4D52-B8CD-61539F50E9A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbTest", "UsbTest\UsbTest.csproj", "{43D4D4CB-9219-48D5-9F7F-F0D9D5B37DFE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{481310A5-C8B6-4D52-B8CD-61539F50E9A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{481310A5-C8B6-4D52-B8CD-61539F50E9A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{481310A5-C8B6-4D52-B8CD-61539F50E9A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43D4D4CB-9219-48D5-9F7F-F0D9D5B37DFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43D4D4CB-9219-48D5-9F7F-F0D9D5B37DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43D4D4CB-9219-48D5-9F7F-F0D9D5B37DFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43D4D4CB-9219-48D5-9F7F-F0D9D5B37DFE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

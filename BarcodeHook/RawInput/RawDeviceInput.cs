@@ -165,7 +165,7 @@ namespace AttnSoft.BarcodeHook.RawInput
                 {
                     if (_devices.TryRemove(lParam, out var device))
                     {
-                        DeviceAction?.Invoke(new DeviceEvent(device, true));
+                        DeviceAction?.Invoke(new DeviceEvent(device, false));
                     }
                     else
                     {
