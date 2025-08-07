@@ -12,6 +12,8 @@ namespace UsbTest
         public Form1()
         {
             InitializeComponent();
+            //指定监听设备。默认为空，监听所有设备。
+            //scanerHook.DeviceId = "HID_VID_1EAB&PID_3222&MI_00_7&39461ef6&0&0000";
             scanerHook.HookEvent += ScanerHook_BarCodeEvent;
             scanerHook.DeviceAction+=ScanerHook_DeviceAction;
             scanerHook.Start();
@@ -34,12 +36,12 @@ namespace UsbTest
         private void ScanerHook_DeviceAction(DeviceEvent deviceEvent)
         {
             ListViewItem? finditem = FindItem(deviceEvent.Device.DeviceId);
-            if (deviceEvent.Attached && finditem==null)
+            if (deviceEvent.Attached && finditem==null)//系统插入了新设备
             {
                 var newIitem= listView1.Items.Add(deviceEvent.Device.DeviceId);
                 newIitem.Selected = true;
             }
-            if (!deviceEvent.Attached && finditem != null)
+            if (!deviceEvent.Attached && finditem != null)//系统移除了设备
             {
                 listView1.Items.Remove(finditem);
             }
