@@ -8,8 +8,8 @@
 		<Copyright>Copyright © 2025 LAW. All rights reserved.</Copyright>
 		<SignAssembly>False</SignAssembly>
 		<Title>AttnSoft.BarcodeHook</Title>
-		<Description>Windows Keyboard Hook Realizes Industrial Scanning Gun Focal-less Input.Windows 键盘钩子实现工业扫码枪无焦点输入</Description>
-		<PackageReleaseNotes>Windows Keyboard Hook Realizes Industrial Scanning Gun Focal-less Input.Windows 键盘钩子实现工业扫码枪无焦点输入</PackageReleaseNotes>
+		<Description>Industrial Scanning Gun Focal-less Input.实现工业扫码枪无焦点输入</Description>
+		<PackageReleaseNotes>Industrial Scanning Gun Focal-less Input.实现工业扫码枪无焦点输入</PackageReleaseNotes>
 		<RepositoryType>public</RepositoryType>
 		<RepositoryUrl>https://github.com/liaiwu/AttnSoft.BarcodeHook.git</RepositoryUrl>
 		<PackageLicenseUrl>https://github.com/liaiwu/AttnSoft.BarcodeHook?tab=MIT-1-ov-file</PackageLicenseUrl>
