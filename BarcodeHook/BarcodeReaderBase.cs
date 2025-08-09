@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 
 ///此项目改编自  https://github.com/draior/BarcodeHook.git
 
@@ -19,6 +20,12 @@ namespace AttnSoft.BarcodeHook
         public BarcodeReaderBase(BarCodeReadSetting ReadSetting)
         {
             this.readSetting = ReadSetting;
+            //如何未设置条码头、条码尾及条码长度，则启用超时触发
+            if (string.IsNullOrEmpty(readSetting.BarcodeHeader) && string.IsNullOrEmpty(readSetting.Trailer) && readSetting.BarcodeLength == 0)
+            {
+                enableTrailerTimeout = true;
+                trailerTimeoutTimer = new System.Threading.Timer(timeoutTimer_Callback, null, Timeout.Infinite, Timeout.Infinite);
+            }
             keybState = KeybStatus.Idle;
             lastKeyTimestamp = DateTime.Now.Ticks;
         } 
@@ -60,6 +67,21 @@ namespace AttnSoft.BarcodeHook
         protected KeybStatus keybState = KeybStatus.Idle;
         //两个按键的间隔时间
         protected readonly int KeyTimeout = 300;
+
+        /// <summary>
+        /// When > 0, in no character arrives within the specified number of milliseconds
+        /// the barcode is considered as terminated and the received character buffer is sent.
+        /// Use this parameter when a barcode has no trailer
+        /// </summary>
+        private readonly int trailerTimeout=300;
+
+        /// <summary>
+        /// Timer used to implement the trailerTimeout. This timer has to run only once after it has been activated
+        /// and not at regular interval.
+        /// </summary>
+        private readonly System.Threading.Timer? trailerTimeoutTimer;
+
+        private bool enableTrailerTimeout = false;
 
         protected virtual bool KeyboardHookHandler_KeyboardHookEvent(KeyboardMsg msg)
         {
@@ -117,29 +139,35 @@ namespace AttnSoft.BarcodeHook
                         if (key.KeyChar != 0)
                         {
                             keysBuffer.Append(key.KeyChar);
-                        }
-                        //读到的码长度符合要求
-                        if (readSetting.BarcodeLength > 0 && keysBuffer.Length == readSetting.BarcodeLength)
-                        {
-                            //触发事件
-                            RaiseScanerEvent();
-                            return true;
-                        }
-                        else if(readSetting.Trailer.Length > 0 && keysBuffer.Length > readSetting.Trailer.Length)
-                        {
-                            bool isFind = true;
-                            for (int i =0;i< readSetting.Trailer.Length;i++)
+
+                            //读到的码长度符合要求
+                            if (readSetting.BarcodeLength > 0 && keysBuffer.Length == readSetting.BarcodeLength)
                             {
-                                if (readSetting.Trailer[readSetting.Trailer.Length - i - 1] != keysBuffer[keysBuffer.Length - i - 1])
-                                {
-                                    isFind = false;
-                                    break;
-                                }
-                            }
-                            if (isFind)
-                            {
+                                //触发事件
                                 RaiseScanerEvent();
                                 return true;
+                            }
+                            else if (readSetting.Trailer.Length > 0 && keysBuffer.Length > readSetting.Trailer.Length)
+                            {
+                                bool isFind = true;
+                                for (int i = 0; i < readSetting.Trailer.Length; i++)
+                                {
+                                    if (readSetting.Trailer[readSetting.Trailer.Length - i - 1] != keysBuffer[keysBuffer.Length - i - 1])
+                                    {
+                                        isFind = false;
+                                        break;
+                                    }
+                                }
+                                if (isFind)
+                                {
+                                    RaiseScanerEvent();
+                                    return true;
+                                }
+                            }
+                            if (enableTrailerTimeout)
+                            {
+                                // Reset the moment the timer will be executed
+                                trailerTimeoutTimer?.Change(trailerTimeout, Timeout.Infinite);
                             }
                         }
                     }
@@ -166,19 +194,19 @@ namespace AttnSoft.BarcodeHook
 
         protected virtual void RaiseScanerEvent()
         {
-            //keybState = KeybStatus.Idle;
-            //if (readSetting.Trailer.Length > 0)
-            //{
-            //    keysBuffer.Length-=readSetting.Trailer.Length;
-            //}
-            //string barcode = keysBuffer.ToString();
-            //if (!string.IsNullOrEmpty(barcode))
-            //{
-            //    ScanerEvent?.Invoke(barcode);
-            //}
-            //keysBuffer.Length = 0;
         }
-
+        /// <summary>
+        /// This procedure is called when the trailer timeout timer is expired.
+        /// </summary>
+        private void timeoutTimer_Callback(object? state)
+        {
+            trailerTimeoutTimer?.Change(Timeout.Infinite, Timeout.Infinite);//只触发一次
+            if (keybState == KeybStatus.ReadingData && keysBuffer.Length>0)
+            {
+                //Console.WriteLine("Barcode read timeout, using current buffer.");
+                RaiseScanerEvent();
+            }
+        }
         /// <summary>
         /// The keyboard interface uses a state machine. This enum contains the different states.
         /// 键盘接口使用状态机。此枚举包含不同的状态。
