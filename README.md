@@ -116,8 +116,9 @@ BarcodeApiReader scanerHook = new BarcodeApiReader(readSetting);
 ```
 注意事项:
 
-1、采用无格式触,不要使用键盘钩子模式,会导致用户的普通键盘输入触发扫码事件.检验采用API模式并绑定设备ID，这样避免了误触发。
-2、处理扫码事件时,如果要访问UI控件,请加入InvokeRequired判断并处理异步，因为超时触发不在UI线程。
+1、采用无格式触，不要使用键盘钩子模式，会导致用户的普通键盘输入触发扫码事件。建议采用API模式并绑定设备ID，这样避免了误触发。
+
+2、处理扫码事件时，如果要访问UI控件，请加入InvokeRequired判断并处理异步，因为超时触发不在UI线程。
 
 ### UsbTest运行示例
 ![Alt text](demo.gif "Demo")
