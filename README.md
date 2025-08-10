@@ -95,6 +95,30 @@ BarcodeReaders scanerHook = new BarcodeReaders(readSetting);
 ```csharp
 BarcodeReaders scanerHook = new BarcodeReaders(new BarCodeReadSetting { Trailer="\r"});
 ```
+### 超时触发模式
+
+在解决扫码枪无焦点输入问题后，部分用户可能会遇到以下情况：操作软件时，最后的焦点停留在某个按钮上，导致扫码时误触发按钮事件。
+由于大部分扫码枪的条码格式以回车符结尾，去掉回车符可以避免误触发按钮事件，但同时也会导致原本以回车符为结束标志的条码无法正常触发。
+
+为了解决这一问题，本模块引入了**超时触发模式**。当最后一个字符到达后，如果在指定时间内没有新的字符到达，系统会认为扫码结束并触发扫码事件。
+
+#### 启用无格式触发方式
+
+通过以下代码配置超时触发模式(即去掉所有条码格式,系统自动进入超时触发模式)：
+```csharp
+var readSetting = new BarCodeReadSetting()
+{
+    BarcodeHeader = "",//条码前缀
+    Trailer = "",//去掉条码结尾
+    BarcodeLength = 0  //条码长度
+};
+BarcodeApiReader scanerHook = new BarcodeApiReader(readSetting);
+```
+注意事项:
+
+1、采用无格式触,不要使用键盘钩子模式,会导致用户的普通键盘输入触发扫码事件.检验采用API模式并绑定设备ID，这样避免了误触发。
+2、处理扫码事件时,如果要访问UI控件,请加入InvokeRequired判断并处理异步，因为超时触发不在UI线程。
+
 ### UsbTest运行示例
 ![Alt text](demo.gif "Demo")
 此示例演示了多扫码枪无焦点输入时的运行效果.

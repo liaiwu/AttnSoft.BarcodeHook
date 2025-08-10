@@ -13,7 +13,18 @@ namespace UsbTest
         {
             InitializeComponent();
             //指定监听设备。默认为空，监听所有设备。
+            #region 超时触发模式
+            //去掉所有条码格式进入 超时触发模式:
+            //var readSetting = new BarCodeReadSetting()
+            //{
+            //    BarcodeHeader = "",//条码前缀
+            //    Trailer = "",//条码结尾
+            //    BarcodeLength = 0//条码长度
+            //};
+            //scanerHook = new BarcodeApiReader(readSetting);
             //scanerHook.DeviceId = "HID_VID_1EAB&PID_3222&MI_00_7&39461ef6&0&0000";
+            #endregion
+
             scanerHook.HookEvent += ScanerHook_BarCodeEvent;
             scanerHook.DeviceAction+=ScanerHook_DeviceAction;
             scanerHook.Start();
@@ -62,6 +73,14 @@ namespace UsbTest
 
         private void ScanerHook_BarCodeEvent(HookResult hookResult)
         {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() =>
+                {
+                    ScanerHook_BarCodeEvent(hookResult);
+                }));
+                return;
+            }
             this.textBox1.Text = "";
             this.textBox2.Text = "";
             this.textBox2.Focus();
