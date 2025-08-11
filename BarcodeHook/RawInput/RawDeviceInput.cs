@@ -39,7 +39,7 @@ namespace AttnSoft.BarcodeHook.RawInput
             _rawInputHeaderSize = Marshal.SizeOf(typeof(RAWINPUTHEADER));
             _devices = new ConcurrentDictionary<IntPtr, RawDevice>();
             Initialize();
-            _wndThread = new Thread(ThreadFunc);
+            _wndThread = new Thread(ThreadFunc) { IsBackground =true};
             _wndThread.Start();
         }
         /// <summary>
@@ -90,11 +90,11 @@ namespace AttnSoft.BarcodeHook.RawInput
         }
         private void ThreadFunc()
         {
-            while (GetMessage(out MSG msg, IntPtr.Zero, 0, 0))
+            while (GetMessage(out MSG msg, _hWnd, 0, 0))
             {
                 TranslateMessage(ref msg);
                 DispatchMessage(ref msg);
-            }
+            }            
         }
         private IntPtr WndProc(IntPtr hWnd, WindowsMessage msg, IntPtr wParam, IntPtr lParam)
         {
