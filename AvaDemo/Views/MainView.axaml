@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:AvaDemo.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="650" d:DesignHeight="450"
+             x:Class="AvaDemo.Views.MainView"
+             x:DataType="vm:MainViewModel">
+  <Design.DataContext>
+    <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+    <vm:MainViewModel />
+  </Design.DataContext>
+	<DockPanel FlowDirection="LeftToRight" VerticalAlignment="Top"  >
+		<StackPanel DockPanel.Dock="Top" Margin="10 30" VerticalAlignment="Top"  HorizontalAlignment="Left" Spacing="10" >
+			<TextBlock Text="扫码设备：" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+			<TextBox  x:Name="txtDeviceId" Width="400" />
+			<TextBlock Text="扫码内容：" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+			<TextBlock  x:Name="txtBarcode"  HorizontalAlignment="Left" VerticalAlignment="Center"/>
+		</StackPanel>
+		<StackPanel Margin="10 2">
+			<TextBlock Margin="0 5">所有设备：</TextBlock>
+			<ListBox x:Name="listDevice">
+				<ListBox.ContextMenu>
+					<ContextMenu>
+						<MenuItem x:Name="menuItemSetId" Header="接收当前设备的条码"/>
+					</ContextMenu>
+				</ListBox.ContextMenu>
+			</ListBox>
+		</StackPanel>
+			
+	</DockPanel>
+ 
+</UserControl>
