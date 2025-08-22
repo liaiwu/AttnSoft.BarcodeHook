@@ -4,19 +4,20 @@ namespace AttnSoft.BarcodeHook.RawInput
 {
     public class RawDevice
     {
-        public nint HDevice { get; }
-        public string HDeviceStr { get; }
+        public nint DeviceHandle { get; }
+        public string DeviceName { get; set; }
         public string? DevicePath { get; set; }
         public string DeviceId { get; set; }
 
         internal RawDevice(nint hDevice)
         {
-            HDevice = hDevice;
-            DeviceId=HDeviceStr = WinApiHelper.FormatIntPtr(hDevice);
+            DeviceHandle = hDevice;
+            DeviceName = "";
+            DeviceId = WinApiHelper.FormatIntPtr(hDevice);
         }
         public override string ToString()
         {
-            return DeviceId==null ? HDeviceStr: DeviceId;
+            return $"{DeviceName} {DeviceId}".Trim();
         }
     }
 }

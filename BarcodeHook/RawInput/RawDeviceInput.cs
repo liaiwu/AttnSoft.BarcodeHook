@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -15,11 +16,6 @@ namespace AttnSoft.BarcodeHook.RawInput
         private const string WindowName = "Input Hidden Window Name";
         private const int BufferSize = 1024;
 
-#if NETSTANDARD1_0_OR_GREATER
-        public IReadOnlyDictionary<IntPtr, RawDevice> Devices => _devices;
-#else
-        public ConcurrentDictionary<IntPtr, RawDevice> Devices => _devices;
-#endif
         public event Action<DeviceEvent>? DeviceAction;
         public event Action<KeyboardDeviceMsg>? KeyPressAction;
 
@@ -41,6 +37,14 @@ namespace AttnSoft.BarcodeHook.RawInput
             Initialize();
             _wndThread = new Thread(ThreadFunc) { IsBackground =true};
             _wndThread.Start();
+        }
+        /// <summary>
+        /// 获取所有输入设备
+        /// </summary>
+        /// <returns></returns>
+        public List<RawDevice> GetDeviceList()
+        {
+            return _devices.Values.ToList();
         }
         /// <summary>
         /// 创建模拟窗口监听输入设备消息

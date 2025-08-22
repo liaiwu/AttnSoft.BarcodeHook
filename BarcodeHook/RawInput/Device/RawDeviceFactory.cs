@@ -5,7 +5,6 @@ using System.Text;
 namespace AttnSoft.BarcodeHook.RawInput
 {
     using static WinApi.User32;
-    using static WinApiHelper;
 
     public class RawDeviceFactory : IRawDeviceFactory
     {
@@ -46,6 +45,7 @@ namespace AttnSoft.BarcodeHook.RawInput
             if (info.dwType == RawInputType.RIM_TYPEKEYBOARD)
             {
                 string devicePath = sb.ToString();
+                Console.WriteLine($"devicePath:{devicePath}");
                 return GetKeyboardDevice(hDevice, devicePath);
             }
             return null;
@@ -65,7 +65,7 @@ namespace AttnSoft.BarcodeHook.RawInput
             //    deviceName= deviceDesc?? deviceName;
             //}
             //catch{ }
-            string hardwareId = $"{classCode}_{subClassCode}_{protocolCode}";
+            string hardwareId = $"{classCode}_{subClassCode}_{protocolCode}";//HID_VID_1EAB&PID_3222&MI_00_7&39461ef6&0&0000
             return new RawDevice(hdevice) {DeviceId= hardwareId, DevicePath = devicePath };
         }
     }

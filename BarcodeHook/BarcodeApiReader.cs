@@ -42,7 +42,7 @@ namespace AttnSoft.BarcodeHook
         /// <returns></returns>
         public List<RawDevice> GetDeviceList()
         {
-            return keyboardHook.Devices.Values.ToList();
+            return keyboardHook.GetDeviceList();
         }
         /// <summary>
         /// 设备变动事件
@@ -67,7 +67,7 @@ namespace AttnSoft.BarcodeHook
         {
             if (isStart) return true;
             isStart = true;
-            RawDeviceInput.Instance.KeyPressAction += Instance_KeyPressAction;
+            keyboardHook.KeyPressAction += Instance_KeyPressAction;
             return isStart;
         }
         /// <summary>
@@ -78,7 +78,7 @@ namespace AttnSoft.BarcodeHook
             if (isStart)
             {
                 isStart = false;
-                RawDeviceInput.Instance.KeyPressAction -= Instance_KeyPressAction;
+                keyboardHook.KeyPressAction -= Instance_KeyPressAction;
             }
         }
         string lastDeviceId = "";

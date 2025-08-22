@@ -9,11 +9,7 @@ namespace AttnSoft.BarcodeHook
 {
     public interface IKeyboardHook
     {
-#if NETSTANDARD1_0_OR_GREATER
-        IReadOnlyDictionary<IntPtr, RawDevice> Devices { get; }
-#else
-        ConcurrentDictionary<IntPtr, RawDevice> Devices { get; }
-#endif
+        List<RawDevice> GetDeviceList();
         event Action<DeviceEvent>? DeviceAction;
         event Action<KeyboardDeviceMsg>? KeyPressAction;
     }

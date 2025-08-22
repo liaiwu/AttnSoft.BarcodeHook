@@ -5,6 +5,7 @@
 		<Version>2.0.2</Version>
 		<Authors>LAW</Authors>
 		<LangVersion>latest</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<Copyright>Copyright © 2025 LAW. All rights reserved.</Copyright>
 		<SignAssembly>False</SignAssembly>
 		<Title>AttnSoft.BarcodeHook</Title>
