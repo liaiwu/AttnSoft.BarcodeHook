@@ -1,13 +1,16 @@
 # ![Alt text](BarcodeHook/BarcodeReader.ico "AttnSoft.AutoUpdate")AttnSoft.BarcodeHook
-Industrial Scanning Gun Focal-less Input.
+A Cross-platform Focal Input System for Industrial Scanning Gun.
 
-工业扫码枪无焦点输入
+一个跨平台的工业扫码枪无焦点输入系统
 ### 系统说明
 本系统支持两种模式实现扫码枪无焦点输入：
 
-1、使用键盘钩子实现
+1、使用键盘钩子实现（适合单个扫码枪）
 
-2、使用系统API实现
+2、使用系统API实现（适合多扫码枪）
+
+Windows下可以使用以上两种模式，Linux下仅支持API模式。
+
 
 ### 功能特性
 1、键盘钩子模式通过单例模式及引用计数，实现键盘钩子全局仅注入一次，减少系统消息处理开销。
@@ -102,7 +105,7 @@ BarcodeReaders scanerHook = new BarcodeReaders(new BarCodeReadSetting { Trailer=
 
 为了解决这一问题，本模块引入了**超时触发模式**。当最后一个字符到达后，如果在指定时间内没有新的字符到达，系统会认为扫码结束并触发扫码事件。
 
-#### 启用无格式触发方式
+#### 启用超时触发模式
 
 通过以下代码配置超时触发模式(即去掉所有条码格式,系统自动进入超时触发模式)：
 ```csharp
@@ -118,7 +121,12 @@ BarcodeApiReader scanerHook = new BarcodeApiReader(readSetting);
 
 1、采用无格式触，不要使用键盘钩子模式，会导致用户的普通键盘输入触发扫码事件。建议采用API模式并绑定设备ID，这样避免了误触发。
 
+3、Linux下需要当前用户在input组下。参考如下命令将当前用户添加到input组:
+```
+sudo usermod -aG input $USER
+```
 2、处理扫码事件时，如果要访问UI控件，请加入InvokeRequired判断并处理异步，因为超时触发不在UI线程。
+
 
 ### UsbTest运行示例
 ![Alt text](demo.gif "Demo")

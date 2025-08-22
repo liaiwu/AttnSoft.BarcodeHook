@@ -9,8 +9,8 @@
 		<Copyright>Copyright © 2025 LAW. All rights reserved.</Copyright>
 		<SignAssembly>False</SignAssembly>
 		<Title>AttnSoft.BarcodeHook</Title>
-		<Description>Industrial Scanning Gun Focal-less Input.实现工业扫码枪无焦点输入</Description>
-		<PackageReleaseNotes>Industrial Scanning Gun Focal-less Input.实现工业扫码枪无焦点输入</PackageReleaseNotes>
+		<Description>A Cross-platform Focal Input System for Industrial Scanning Gun.一个跨平台的工业扫码枪无焦点输入系统</Description>
+		<PackageReleaseNotes>A Cross-platform Focal Input System for Industrial Scanning Gun.一个跨平台的工业扫码枪无焦点输入系统</PackageReleaseNotes>
 		<RepositoryType>public</RepositoryType>
 		<RepositoryUrl>https://github.com/liaiwu/AttnSoft.BarcodeHook.git</RepositoryUrl>
 		<PackageLicenseUrl>https://github.com/liaiwu/AttnSoft.BarcodeHook?tab=MIT-1-ov-file</PackageLicenseUrl>
