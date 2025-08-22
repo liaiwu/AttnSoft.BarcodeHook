@@ -14,10 +14,7 @@ namespace AttnSoft.BarcodeHook.RawInput
     {
         public event Action<DeviceEvent>? DeviceAction;
         public event Action<KeyboardDeviceMsg>? KeyPressAction;
-
         private readonly Thread _wndThread;
-        //IntPtr udev = IntPtr.Zero;
-        //IntPtr li = IntPtr.Zero;
 
         private ConcurrentDictionary<IntPtr, RawDevice> _devices = new ConcurrentDictionary<IntPtr, RawDevice>();
         public static LinuxRawDeviceInput Instance = new LinuxRawDeviceInput();
@@ -41,103 +38,13 @@ namespace AttnSoft.BarcodeHook.RawInput
         private void Initialize()
         {
             Console.WriteLine($"Initialize...");
-
-       
             //GetAllDevice();
         }
-        #region 监控设备变动(基于udev 的实现)
-        //protected void Run()
-        //{
-        //    IntPtr udev = LinuxApi.Libudev.udev_new();
-        //    RunAssert(udev == IntPtr.Zero, "HidSharp udev_new failed.");
-        //    try
-        //    {
-        //        IntPtr monitor = LinuxApi.Libudev.udev_monitor_new_from_netlink(udev, "udev");
-        //        RunAssert(monitor == IntPtr.Zero, "HidSharp udev_monitor_new_from_netlink failed.");
-        //        try
-        //        {
-        //            int ret;
-        //            ret = LinuxApi.Libudev.udev_monitor_filter_add_match_subsystem_devtype(monitor, "hid", null);
-        //            RunAssert(ret < 0, "HidSharp udev_monitor_failed_add_match_subsystem_devtype failed.");
 
-        //            ret = LinuxApi.Libudev.udev_monitor_enable_receiving(monitor);
-        //            RunAssert(ret < 0, "HidSharp udev_monitor_enable_receiving failed.");
-
-        //            int fd = LinuxApi.Libudev.udev_monitor_get_fd(monitor);
-        //            RunAssert(fd < 0, "HidSharp udev_monitor_get_fd failed.");
-
-        //            var pollFds = new LinuxApi.Libc.Pollfd[1];
-        //            pollFds[0].fd = fd;
-        //            pollFds[0].events = LinuxApi.Libc.Pollev.IN;
-
-        //            while (true)
-        //            {
-        //                ret = LinuxApi.Libc.Retry(() => LinuxApi.Libc.poll(pollFds, 1, -1));
-        //                if (ret < 0) { break; }
-        //                Console.WriteLine($"监测到设备变动.fds[0].revents:{pollFds[0].revents}");
-        //                if ((pollFds[0].revents & Pollev.IN) == 0)
-        //                {
-        //                    Console.WriteLine("pollFds[0].revents & POLLIN) == 0");
-        //                    continue;
-        //                }
-        //                if (ret == 1)
-        //                {
-        //                    if (0 != (pollFds[0].revents & (LinuxApi.Libc.Pollev.ERR | LinuxApi.Libc.Pollev.HUP | LinuxApi.Libc.Pollev.NVAL))) { break; }
-        //                    if (0 != (pollFds[0].revents & LinuxApi.Libc.Pollev.IN))
-        //                    {
-
-        //                        IntPtr device = LinuxApi.Libudev.udev_monitor_receive_device(monitor);
-        //                        if (device != IntPtr.Zero)
-        //                        {
-        //                            string action= LinuxApi.Libudev.udev_device_get_action(device);
-        //                            bool attached = "add" == action || "bind"==action;
-        //                            Console.WriteLine($"发现硬件变动:{action},device:{device}");
-        //                            if (attached)
-        //                            {
-        //                                if (!_devices.TryGetValue(device, out RawDevice? rawDevice))
-        //                                {
-        //                                    rawDevice = TryCreate(udev, device);
-        //                                    if (rawDevice != null)
-        //                                    {
-        //                                        _devices.TryAdd(device, rawDevice);
-        //                                        DeviceAction?.Invoke(new DeviceEvent(rawDevice, attached));
-        //                                    }
-        //                                }
-        //                            }
-        //                            else
-        //                            {
-
-        //                                if (_devices.TryRemove(device, out RawDevice? rawDevice))
-        //                                {
-        //                                    DeviceAction?.Invoke(new DeviceEvent(rawDevice, attached));
-        //                                }
-        //                            }
-
-        //                            LinuxApi.Libudev.udev_device_unref(device);
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            Console.WriteLine("退出设备监控.");
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            Console.WriteLine("设备监控异常:"+ e.ToString());
-        //        }
-        //        finally
-        //        {
-        //            LinuxApi.Libudev.udev_monitor_unref(monitor);
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        LinuxApi.Libudev.udev_unref(udev);
-        //    }
-        //}
-        #endregion
         #region 监控设备变动(基于input 的实现)
         protected void RunInput()
         {
+            IntPtr li= IntPtr.Zero;
             IntPtr udev = LinuxApi.Libudev.udev_new();
             RunAssert(udev == IntPtr.Zero, "udev_new failed.");
 
@@ -149,31 +56,39 @@ namespace AttnSoft.BarcodeHook.RawInput
                 open_restricted = Marshal.GetFunctionPointerForDelegate(openDelegate),
                 close_restricted = Marshal.GetFunctionPointerForDelegate(closeDelegate),
             };
-            // 创建 libinput 上下文（基于 udev）
-            var li = libinput_udev_create_context(ref interface1, IntPtr.Zero, udev);
-            if (li == IntPtr.Zero)
+            try
             {
-                Console.WriteLine("Failed to create libinput context");
-                LinuxApi.Libudev.udev_unref(udev);
-                return;
-            }
-            //  绑定到 seat0
-            if (libinput_udev_assign_seat(li, "seat0") != 0)
+                // 创建 libinput 上下文（基于 udev）
+                li = libinput_udev_create_context(ref interface1, IntPtr.Zero, udev);
+                if (li == IntPtr.Zero)
+                {
+                    Console.WriteLine("Failed to create libinput context");
+                    LinuxApi.Libudev.udev_unref(udev);
+                    return;
+                }
+                //  绑定到 seat0
+                if (libinput_udev_assign_seat(li, "seat0") != 0)
+                {
+                    Console.WriteLine("Failed to assign seat0");
+                    libinput_unref(li);
+                    LinuxApi.Libudev.udev_unref(udev);
+                    return;
+                }
+                // 处理事件，完成设备枚举
+                libinput_dispatch(li);
+                HandleDeviceEvent(ref li);
+            }catch(Exception e)
             {
-                Console.WriteLine("Failed to assign seat0");
-                libinput_unref(li);
-                LinuxApi.Libudev.udev_unref(udev);
-                return;
+                Console.WriteLine($"RunInput error:{e.Message}");
+                Console.WriteLine($"请检查当前用户是否在input组,可以参考下面命令将用户添加到input组:(需要注销或重启)");
+                Console.WriteLine($"sudo usermod -aG input $USER");
             }
-            // 处理事件，完成设备枚举
-            libinput_dispatch(li);
-            HandleDeviceEvent(ref li);
 
             if (li == IntPtr.Zero || udev == IntPtr.Zero)
             {
                 return;
             }
-            Console.WriteLine("RunInput....");
+            //Console.WriteLine("RunInput....");
             try
             {
                 // 事件循环（对齐原生：用 poll() 等待事件，而非 Thread.Sleep）
@@ -223,17 +138,10 @@ namespace AttnSoft.BarcodeHook.RawInput
             {
                 var type = libinput_event_get_type(eventHandle);
                 var inputDevice = libinput_event_get_device(eventHandle);
-                //var deviceName = libinput_device_get_name(inputDevice) ?? "unknown device";
-                //var sysname = libinput_device_get_sysname(inputDevice);
-                //var pid = libinput_device_get_id_product(inputDevice);
-                //var vid = libinput_device_get_id_vendor(inputDevice);
-                //libinput_device_get_id_bustype(inputDevice);
-                //Console.WriteLine($"type:{type}");
                 switch (type)
                 {
                     case libinput_event_type.LIBINPUT_EVENT_DEVICE_ADDED:
-                        //Console.WriteLine($"deviceName:{deviceName},sysname:{sysname},vid:{vid.ToString("X")},pid:{pid.ToString("X")}");
-                        Console.WriteLine("device added");
+                        //Console.WriteLine("device added");
                         if (!_devices.TryGetValue(inputDevice, out var newDevice))
                         {
                             newDevice = TryCreate(inputDevice);
@@ -245,7 +153,7 @@ namespace AttnSoft.BarcodeHook.RawInput
                         }
                         break;
                     case libinput_event_type.LIBINPUT_EVENT_DEVICE_REMOVED:
-                        Console.WriteLine("device removed");
+                        //Console.WriteLine("device removed");
                         if (_devices.TryGetValue(inputDevice, out var removeDevice))
                         {
                             DeviceAction?.Invoke(new DeviceEvent(removeDevice, false));
@@ -275,62 +183,6 @@ namespace AttnSoft.BarcodeHook.RawInput
                 libinput_event_destroy(eventHandle);  // 释放事件
             }
         }
-
-        private void GetAllDevice()
-        {
-            string subsystem = "input";// "hid"; //"hidraw";//"input"; 
-            IntPtr udev = LinuxApi.Libudev.udev_new();
-            if (IntPtr.Zero != udev)
-            {
-                try
-                {
-                    IntPtr enumerate = LinuxApi.Libudev.udev_enumerate_new(udev);
-                    if (IntPtr.Zero != enumerate)
-                    {
-                        try
-                        {
-                            //LinuxApi.Libudev.udev_enumerate_add_match_subsystem(enumerate, subsystem);
-                            if (0 == LinuxApi.Libudev.udev_enumerate_add_match_subsystem(enumerate, subsystem) &&
-                                0 == LinuxApi.Libudev.udev_enumerate_scan_devices(enumerate))
-                            {
-                                IntPtr entry;
-                                for (entry = LinuxApi.Libudev.udev_enumerate_get_list_entry(enumerate); entry != IntPtr.Zero;
-                                     entry = LinuxApi.Libudev.udev_list_entry_get_next(entry))
-                                {
-                                    string syspath = LinuxApi.Libudev.udev_list_entry_get_name(entry);
-                                    Console.WriteLine($"GetAllDevice syspath:{syspath}");
-                                    if (syspath != null)
-                                    {
-                                        IntPtr device = LinuxApi.Libudev.udev_device_new_from_syspath(udev, syspath);
-                                        //string devnode = LinuxApi.Libudev.udev_device_get_devnode(device);
-                                        //Console.WriteLine($"GetAllDevice devnode:{devnode}");
-                                        var newDevice = TryCreate(udev, device);
-                                        if (null != newDevice)
-                                        {
-                                            _devices[device] = newDevice;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            // Ignore any exceptions.
-                            Console.WriteLine("GetAllDevice:" + ex.Message);
-                        }
-                        finally
-                        {
-                            LinuxApi.Libudev.udev_enumerate_unref(enumerate);
-                        }
-                    }
-                }
-                finally
-                {
-                    LinuxApi.Libudev.udev_unref(udev);
-                }
-            }
-        }
-
         internal static RawDevice? TryCreate(IntPtr inputDevice)
         {
             if (IntPtr.Zero == inputDevice) return null;
