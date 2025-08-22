@@ -121,17 +121,19 @@ BarcodeApiReader scanerHook = new BarcodeApiReader(readSetting);
 
 1、采用无格式触，不要使用键盘钩子模式，会导致用户的普通键盘输入触发扫码事件。建议采用API模式并绑定设备ID，这样避免了误触发。
 
+
+2、处理扫码事件时，如果要访问UI控件，请加入InvokeRequired判断并处理异步，因为超时触发不在UI线程。
+
 3、Linux下需要当前用户在input组下。参考如下命令将当前用户添加到input组:
 ```
 sudo usermod -aG input $USER
 ```
-2、处理扫码事件时，如果要访问UI控件，请加入InvokeRequired判断并处理异步，因为超时触发不在UI线程。
-
-
 ### UsbTest运行示例
 ![Alt text](demo.gif "Demo")
 此示例演示了多扫码枪无焦点输入时的运行效果.
 在不同的窗口,通过鼠标右键菜单选择扫码枪设备，即可监听指定的设备。
+### AvaDemo在Linux下t运行示例
+![Alt text](Avdemo.gif "Demo")
 
 ### 支持框架
 

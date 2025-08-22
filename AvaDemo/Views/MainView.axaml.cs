@@ -83,6 +83,8 @@ public partial class MainView : UserControl
             var item = FindItem(result.DeviceId);
             if (item != null)
             {
+                listDevice.UnselectAll();
+                this.InvalidateVisual();
                 listDevice.SelectedItem = item;
             }
         }, DispatcherPriority.Background);
