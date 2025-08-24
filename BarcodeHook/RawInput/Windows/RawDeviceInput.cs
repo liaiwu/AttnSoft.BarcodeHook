@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 
 namespace AttnSoft.BarcodeHook.RawInput
@@ -19,7 +20,7 @@ namespace AttnSoft.BarcodeHook.RawInput
         public event Action<DeviceEvent>? DeviceAction;
         public event Action<KeyboardDeviceMsg>? KeyPressAction;
 
-        private readonly IRawDeviceFactory _factory;
+        //private readonly IRawDeviceFactory _factory;
         private readonly WndProc _wndProc;
         private readonly Thread _wndThread;
         private IntPtr _hWnd;
@@ -29,7 +30,7 @@ namespace AttnSoft.BarcodeHook.RawInput
         public static RawDeviceInput Instance = new RawDeviceInput();
         private RawDeviceInput()
         {
-            _factory = new RawDeviceFactory();
+            //_factory = new RawDeviceFactory();
             _wndProc = WndProc;
             _buffer = Marshal.AllocHGlobal(BufferSize);
             _rawInputHeaderSize = Marshal.SizeOf(typeof(RAWINPUTHEADER));
@@ -61,7 +62,7 @@ namespace AttnSoft.BarcodeHook.RawInput
             ushort atom = RegisterClassEx(ref wc);
             if (atom == 0)
             {
-                Console.WriteLine($"Cannot register window class {WinApi.FormatMessage()}.");
+                Console.WriteLine($"Cannot register window class {WinApiHelper.FormatMessage()}.");
                 return;
             }
             _hWnd = CreateWindowExW(
@@ -79,7 +80,7 @@ namespace AttnSoft.BarcodeHook.RawInput
                 lpParam: IntPtr.Zero);
             if (_hWnd == IntPtr.Zero)
             {
-                Console.WriteLine($"Cannot create window {WinApi.FormatMessage()}.");
+                Console.WriteLine($"Cannot create window {WinApiHelper.FormatMessage()}.");
                 return;
             }
             RAWINPUTDEVICE[] devices = new RAWINPUTDEVICE[1];
@@ -89,7 +90,7 @@ namespace AttnSoft.BarcodeHook.RawInput
             devices[0].hwndTarget = _hWnd;
             if (!RegisterRawInputDevices(devices, 1, Marshal.SizeOf(typeof(RAWINPUTDEVICE))))
             {
-                Console.WriteLine($"Cannot register raw keyboard input {WinApi.FormatMessage()}.");
+                Console.WriteLine($"Cannot register raw keyboard input {WinApiHelper.FormatMessage()}.");
             }
         }
         private void ThreadFunc()
@@ -126,7 +127,7 @@ namespace AttnSoft.BarcodeHook.RawInput
             int size = BufferSize;
             if (GetRawInputData(lParam, GetRawInputDataCommand.RID_INPUT, buffer, ref size, _rawInputHeaderSize) == -1)
             {
-                Console.WriteLine($"GetRawInputData error {WinApi.FormatMessage()}.");
+                Console.WriteLine($"GetRawInputData error {WinApiHelper.FormatMessage()}.");
             }
             else
             {
@@ -156,7 +157,7 @@ namespace AttnSoft.BarcodeHook.RawInput
         {
             if (wParam.ToInt64() == GIDC_ARRIVAL)//插入新设备
             {
-                var device = _factory.FromHDevice(lParam);
+                var device = FromHDevice(lParam);
                 if (null != device)
                 {
                     _devices.TryAdd(lParam, device);
@@ -178,9 +179,56 @@ namespace AttnSoft.BarcodeHook.RawInput
                 }
             }
         }
+        internal RawDevice? FromHDevice(IntPtr hDevice)
+        {
+            RID_DEVICE_INFO info = default;
+            int size = Marshal.SizeOf(typeof(RID_DEVICE_INFO));
+            if (GetRawInputDeviceInfoW(hDevice, GetRawDeviceInfoCommand.RIDI_DEVICEINFO, ref info, ref size) < 0)
+            {
+                Console.WriteLine($"Cannot get raw input device info {WinApiHelper.FormatMessage()}.");
+                return null;
+            }
+            size = 0;
+            if (GetRawInputDeviceInfoW(hDevice, GetRawDeviceInfoCommand.RIDI_DEVICENAME, IntPtr.Zero, ref size) < 0)
+            {
+                Console.WriteLine($"Cannot get raw input device name length {WinApiHelper.FormatMessage()}.");
+                return null;
+            }
+
+            var sb = new StringBuilder(size);
+            if (GetRawInputDeviceInfoW(hDevice, GetRawDeviceInfoCommand.RIDI_DEVICENAME, sb, ref size) < 0)
+            {
+                Console.WriteLine($"Cannot get raw input device name {WinApiHelper.FormatMessage()}.");
+                return null;
+            }
+            if (info.dwType == RawInputType.RIM_TYPEKEYBOARD)
+            {
+                string devicePath = sb.ToString();
+                Console.WriteLine($"devicePath:{devicePath}");
+                return GetKeyboardDevice(hDevice, devicePath);
+            }
+            return null;
+        }
+        private RawDevice GetKeyboardDevice(nint hdevice, string devicePath)
+        {
+            var split = devicePath.Substring(4).Split('#');
+            var classCode = split[0];       // HID (Class code)
+            var subClassCode = split[1];    // PNP0303 (SubClass code)
+            var protocolCode = split[2];    // 3&13c0b0c5&0 (Protocol code)
+            //string deviceName = "未知设备";
+            //try
+            //{
+            //    var deviceKey = Registry.LocalMachine.OpenSubKey($"System\\CurrentControlSet\\Enum\\{classCode}\\{subClassCode}\\{protocolCode}");
+            //    var deviceDesc = deviceKey?.GetValue("DeviceDesc")?.ToString();
+            //    deviceDesc = deviceDesc?.Substring(deviceDesc.IndexOf(';') + 1);
+            //    deviceName= deviceDesc?? deviceName;
+            //}
+            //catch{ }
+            string hardwareId = $"{classCode}_{subClassCode}_{protocolCode}";//HID_VID_1EAB&PID_3222&MI_00_7&39461ef6&0&0000
+            return new RawDevice(hdevice) { DeviceId = hardwareId, DevicePath = devicePath };
+        }
         public void Dispose()
         {
-            _factory?.Dispose();
             if (_hWnd != IntPtr.Zero)
             {
                 SendMessage(_hWnd, WindowsMessage.WM_DESTROY, IntPtr.Zero, IntPtr.Zero);

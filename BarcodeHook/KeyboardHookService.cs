@@ -12,18 +12,16 @@ namespace AttnSoft.BarcodeHook
     {
         public static IKeyboardHook GetService()
         {
-#if NETFRAMEWORK
-            return RawDeviceInput.Instance;
-#else
+#if !NETFRAMEWORK
             // 判断是否是 Linux
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 Console.WriteLine("当前运行在 Linux 上");
                 return LinuxRawDeviceInput.Instance;
             }
-
-            return RawDeviceInput.Instance;
 #endif
+            return RawDeviceInput.Instance;
+
         }
     }
 }

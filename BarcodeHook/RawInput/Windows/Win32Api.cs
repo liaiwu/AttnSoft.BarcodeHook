@@ -8,7 +8,7 @@ namespace AttnSoft.BarcodeHook
     {
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern uint FormatMessage(
+        internal static extern uint FormatMessage(
           uint dwFlags,         // source and processing options
           IntPtr lpSource,        // message source
           int dwMessageId,      // message identifier
@@ -17,44 +17,20 @@ namespace AttnSoft.BarcodeHook
           int nSize,            // maximum size of message buffer
           IntPtr Arguments        // array of message inserts
           );
-
         /// <summary>
-        /// Retrieve the error message of the last Win32 error.
+        /// Retrieves a module handle for the specified module. The module must have been loaded by the calling process.
         /// </summary>
-        /// <returns>The error message for last error.</returns>
-        public static string FormatMessage()
-        {
-            return FormatMessage(Marshal.GetLastWin32Error());
-        }
+        /// <param name="lpModuleName">The name of the loaded module (either a .dll or .exe file).
+        /// If the file name extension is omitted, the default library extension .dll is appended.
+        /// The file name string can include a trailing point character (.) to indicate that the module name has no extension.
+        /// The string does not have to specify a path. When specifying a path, be sure to use backslashes (\), not forward slashes (/).
+        /// The name is compared (case independently) to the names of modules currently mapped into the address space of the calling process.
+        /// If this parameter is NULL, GetModuleHandle returns a handle to the file used to create the calling process (.exe file).</param>
+        /// <returns>If the function succeeds, the return value is a handle to the specified module.
+        /// If the function fails, the return value is NULL. To get extended error information, call GetLastError.</returns>
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern IntPtr GetModuleHandle(string lpModuleName);
 
-        /// <summary>
-        /// Retrieve the error message of the given Win32 error
-        /// </summary>
-        /// <param name="dwMessageId">The Win32 error code</param>
-        /// <returns>The error description for the given error code</returns>
-        public static string FormatMessage(int dwMessageId)
-        {
-            const int FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200;
-            const int FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000;
-            StringBuilder msg = new StringBuilder(300);
-            if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                              IntPtr.Zero,
-                              dwMessageId,
-                              0,
-                              msg,
-                              msg.Capacity,
-                              IntPtr.Zero) > 0)
-            {
-                while (msg.Length > 0 && msg[msg.Length - 1] <= ' ')
-                {
-                    msg.Length--;
-                }
-
-                return msg.ToString();
-            }
-
-            return string.Format("Win32 error {0}", dwMessageId);
-        }
 
 
         #region Windows messages constants
@@ -210,6 +186,70 @@ namespace AttnSoft.BarcodeHook
         public static class User32
         {
             public delegate IntPtr WndProc(IntPtr hWnd, WindowsMessage msg, IntPtr wParam, IntPtr lParam);
+            /// <summary>
+            /// An application-defined or library-defined callback function used with the SetWindowsHookEx function.
+            /// The system calls this function every time a new keyboard input event is about to be posted into a thread input queue.
+            /// </summary>
+            /// <param name="nCode">A code the hook procedure uses to determine how to process the message.
+            /// If nCode is less than zero, the hook procedure must pass the message to the CallNextHookEx function without further processing and should return the value returned by CallNextHookEx.
+            /// This parameter can be one of the following values:
+            /// HC_ACTION = 0
+            /// The wParam and lParam parameters contain information about a keyboard message.</param>
+            /// <param name="wParam">The identifier of the keyboard message.
+            /// This parameter can be one of the following messages: WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, or WM_SYSKEYUP.</param>
+            /// <param name="lParam">A pointer to a KBDLLHOOKSTRUCT structure.</param>
+            /// <returns>If nCode is less than zero, the hook procedure must return the value returned by CallNextHookEx.
+            /// If nCode is greater than or equal to zero, and the hook procedure did not process the message,
+            /// it is highly recommended that you call CallNextHookEx and return the value it returns;
+            /// otherwise, other applications that have installed WH_KEYBOARD_LL hooks will not receive hook notifications and may behave incorrectly as a result.
+            /// If the hook procedure processed the message, it may return a nonzero value to prevent the system from passing the message to the rest of the hook chain
+            /// or the target window procedure.</returns>
+            public delegate IntPtr HookKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+            /// <summary>
+            /// Installs an application-defined hook procedure into a hook chain.
+            /// You would install a hook procedure to monitor the system for certain types of events.
+            /// These events are associated either with a specific thread or with all threads in the same desktop as the calling thread.
+            /// </summary>
+            /// <param name="idHook">The type of hook procedure to be installed. This parameter can be one of the following values:
+            /// WH_KEYBOARD_LL = 13
+            /// Installs a hook procedure that monitors low-level keyboard input events. For more information, see the LowLevelKeyboardProc hook procedure.</param>
+            /// <param name="lpfn">A pointer to the hook procedure.
+            /// If the dwThreadId parameter is zero or specifies the identifier of a thread created by a different process,
+            /// the lpfn parameter must point to a hook procedure in a DLL.
+            /// Otherwise, lpfn can point to a hook procedure in the code associated with the current process.</param>
+            /// <param name="hMod"></param>
+            /// <param name="dwThreadId">The identifier of the thread with which the hook procedure is to be associated.
+            /// For desktop apps, if this parameter is zero, the hook procedure is associated with all existing threads running in the same desktop as the calling thread.</param>
+            /// <returns>If the function succeeds, the return value is the handle to the hook procedure.
+            /// If the function fails, the return value is NULL. To get extended error information, call GetLastError.</returns>
+            [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+            internal static extern IntPtr SetWindowsHookEx(int idHook, HookKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
+            /// <summary>
+            /// Removes a hook procedure installed in a hook chain by the SetWindowsHookEx function.
+            /// </summary>
+            /// <param name="hhk">A handle to the hook to be removed. This parameter is a hook handle obtained by a previous call to SetWindowsHookEx.</param>
+            /// <returns>Success</returns>
+            [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+            internal static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+            /// <summary>
+            /// Passes the hook information to the next hook procedure in the current hook chain.
+            /// A hook procedure can call this function either before or after processing the hook information.
+            /// </summary>
+            /// <param name="hhk">This parameter is ignored.</param>
+            /// <param name="nCode">The hook code passed to the current hook procedure.
+            /// The next hook procedure uses this code to determine how to process the hook information.</param>
+            /// <param name="wParam">The wParam value passed to the current hook procedure.
+            /// The meaning of this parameter depends on the type of hook associated with the current hook chain.</param>
+            /// <param name="lParam">The lParam value passed to the current hook procedure.
+            /// The meaning of this parameter depends on the type of hook associated with the current hook chain.</param>
+            /// <returns>his value is returned by the next hook procedure in the chain. The current hook procedure must also return this value.
+            /// The meaning of the return value depends on the hook type. For more information, see the descriptions of the individual hook procedures.</returns>
+            [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+            internal static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
 
             [DllImport("user32.dll")]
             [return: MarshalAs(UnmanagedType.U2)]
