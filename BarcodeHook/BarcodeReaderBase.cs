@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AttnSoft.BarcodeHook.RawInput;
+using System;
 using System.Text;
 using System.Threading;
 

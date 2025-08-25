@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace AttnSoft.BarcodeHook
+namespace AttnSoft.BarcodeHook.RawInput
 {
     using static WinApi.User32;
     /// <summary>

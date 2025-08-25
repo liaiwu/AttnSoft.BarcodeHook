@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using AttnSoft.BarcodeHook.RawInput;
 
 ///此项目改编自  https://github.com/draior/BarcodeHook.git
 

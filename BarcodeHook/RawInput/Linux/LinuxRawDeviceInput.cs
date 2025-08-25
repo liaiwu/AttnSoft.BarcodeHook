@@ -8,8 +8,8 @@ using System.Threading;
 
 namespace AttnSoft.BarcodeHook.RawInput
 {
-    using static AttnSoft.BarcodeHook.LinuxApi.Libc;
-    using static AttnSoft.BarcodeHook.LinuxApi.Libinput;
+    using static LinuxApi.Libc;
+    using static LinuxApi.Libinput;
     internal class LinuxRawDeviceInput : IKeyboardHook, IDisposable
     {
         public event Action<DeviceEvent>? DeviceAction;

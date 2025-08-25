@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace AttnSoft.BarcodeHook
+namespace AttnSoft.BarcodeHook.RawInput
 {
     public static class WinApiHelper
     {

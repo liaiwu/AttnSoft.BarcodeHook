@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AttnSoft.BarcodeHook.RawInput;
+using System;
 
 namespace AttnSoft.BarcodeHook
 {

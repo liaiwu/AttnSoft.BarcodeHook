@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace AttnSoft.BarcodeHook
+namespace AttnSoft.BarcodeHook.RawInput
 {
     internal class LinuxApi
     {

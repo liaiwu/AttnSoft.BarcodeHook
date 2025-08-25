@@ -1,7 +1,7 @@
 using AttnSoft.BarcodeHook;
 using AttnSoft.BarcodeHook.RawInput;
 
-namespace AttnSoft.BarcodeHook
+namespace AttnSoft.BarcodeHook.RawInput
 {
     public readonly struct DeviceEvent
     {
