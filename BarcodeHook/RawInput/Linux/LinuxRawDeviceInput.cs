@@ -154,7 +154,7 @@ namespace AttnSoft.BarcodeHook.RawInput
                         break;
                     case libinput_event_type.LIBINPUT_EVENT_DEVICE_REMOVED:
                         //Console.WriteLine("device removed");
-                        if (_devices.TryGetValue(inputDevice, out var removeDevice))
+                        if (_devices.TryRemove(inputDevice, out var removeDevice))
                         {
                             DeviceAction?.Invoke(new DeviceEvent(removeDevice, false));
                         }
