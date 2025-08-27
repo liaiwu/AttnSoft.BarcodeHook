@@ -1,7 +1,7 @@
 # ![Alt text](BarcodeHook/BarcodeReader.ico "AttnSoft.AutoUpdate")AttnSoft.BarcodeHook
-A Cross-platform Focal Input System for Industrial Scanning Gun.
+A Cross-platform industrial barcode gun without focus input component.
 
-一个跨平台的工业扫码枪无焦点输入系统
+一个跨平台的工业条码枪无焦点输入组件
 ### 系统说明
 本系统支持两种模式实现扫码枪无焦点输入：
 
